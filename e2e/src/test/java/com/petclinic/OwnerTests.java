@@ -3,33 +3,31 @@ package com.petclinic;
 import com.petclinic.data.Owner;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
+
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 
 public class OwnerTests {
 	private IOwnerManager om = new SpringOwnerManager();
-	private int ownerId;
+	private List<Owner> owners;
+	private Owner owner = Owner.builder().firstName("art").lastName("naz").address("kemerov")
+		.city("kemerovo").telephone("123456").build();
 
 	@BeforeEach
-	public void createOwner(){
-		// todo надо сделать метод который проверяет наличие юзера и если есть, то удалять его, но это уже на спринге
+	public void createAndDeleteOwners(){
+		owners = om.findOwnerByFullName("art","naz");
 
-		ownerId = om.createOwner(
-			Owner.builder()
-				.firstName("art")
-				.lastName("naz")
-				.address("kemerov")
-				.city("kemerovo")
-				.telephone("123456")
-				.build()
-		);
+		if (!owners.isEmpty()){
+			om.deleteOwnerById(owners.get(0).getId());
+		}
+		om.createOwner(owner);
+
+		owners = om.findOwnerByFullName("firstName","lastName");
+		if (!owners.isEmpty()){
+			om.deleteOwnerById(owners.get(0).getId());
+		}
 	}
-
-	@AfterEach
-	public void deleteOwner() {
-		om.deleteOwnerById(ownerId);
-	}
-
 
 	@RepeatedTest(2)
 	public void findOwner() {
